@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="new.css">
+</head>
+
+<body>
+
+    <div class="task">
+        <div id="1">Нарисуйте гвоздь</div>
+        <div id="2">Нарисуйте дерево</div>
+        <div id="3">Нарисуйте верблюда</div>
+        <div id="4">Нарисуйтe Шрека(без ботинок)(Сложный уровень)</div>
+    </div>
+    <div class="main">
+        <canvas width="500px" height="500px" id="canvas"></canvas>
+    </div>
+    <input type="color" id="color">
+    <div class="main">
+        <button id="clear">Залить белым</button>
+        <button onclick="check()">Проверка</button>
+    </div>
+    <div id="bbs">
+        <button id="bu" onclick="bupp()">+ширина</button>
+        <button id="bd" onclick="bdown()">-ширина</button>
+    </div>
+    <div id="bbss"></div>
+    <img src="dog-maraca.gif">
+    <div>Эта собачка помогла мне найти ошибку</div>
+
+    <div id="label-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+
+        //canvas
+        let canvas = document.getElementById("canvas");
+
+        let d1 = document.getElementById("1");
+        let d2 = document.getElementById("2");
+        let d3 = document.getElementById("3");
+        let d4 = document.getElementById("4");
+        let bu = document.getElementById("bu");
+        let bd = document.getElementById("bd")
+
+        d2.hidden = true;
+        d3.hidden = true;
+        d4.hidden = true;
+
+        let task = 1;
+
+        let rightAns, rightProb;
+
+        let img = document.getElementById("img");
+        let ctx = canvas.getContext("2d");
+        let color = "#000000";
+        let inputColor = document.getElementById("color");
+        let clear = document.getElementById("clear");
+        let drawing = false;
+        let imgNum = 0;
+        let clr = document.getElementById("clr");
+        let points = 0;
+        let rad = 15;
+        let bbs = document.getElementById("bbss");//не вкладывал в название смысл \(0_0)/
+        bbs.innerHTML = "Ширина: " + rad
+		
+		
+		ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.fillRect(0, 0, 500, 500);
+		
+        function draw(x, y) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.ellipse(x, y, rad, rad, 0, 0, Math.PI * 2);
+
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!drawing) {
+                return;
+            }
+            let x, y;
+            x = e.pageX;
+            y = e.pageY;
+            draw(x, y)
+        })
+
+        canvas.addEventListener("mousedown", () => {
+            drawing = true;
+        })
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+        })
+
+        inputColor.oninput = () => {
+            color = inputColor.value;
+        }
+
+        clear.addEventListener("mousedown", () => { //костыль
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.fillRect(0, 0, 500, 500);
+        })
+
+        function bupp() {
+            rad += 1;
+            bbs.innerHTML = "Ширина: " + rad
+        }
+
+        function bdown() {
+            rad -= 1;
+            bbs.innerHTML = "Ширина: " + rad
+        }
+
+        //Сеть (нейронная)
+
+        const URL = "https://teachablemachine.withgoogle.com/models/i_3r66orb/";
+
+        let model, prediction, maxPredictions;
+        init();
+        async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+
+            // load the model and metadata
+            // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+            // or files from your local hard drive
+            // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+            /*
+ 
+            labelContainer = document.getElementById("label-container");
+            for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+            }*/
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+        }
+        async function predict() {
+            // predict can take in an image, video or canvas html element
+            let canvas = document.getElementById("canvas");
+            prediction = await model.predict(canvas);
+            console.log(prediction);
+            rightProb = 0;
+            for (let i = 0; i < maxPredictions; i++) {
+                let name = prediction[i].className;
+                let prob = prediction[i].probability.toFixed(2);
+                if (rightProb < prob) {
+                    rightAns = name;
+                    rightProb = prob;
+
+                }
+
+            }
+            console.log(rightAns);
+            console.log(rightProb);
+        }
+
+        async function check() { //костыли, вперёд!
+            await predict()
+
+            if (task == 1 && rightAns != "Гвоздь") {
+                alert(`Это ${rightAns}, а не гвоздь! Бывает, просто залей на это`)
+            }
+            if (task == 2 && rightAns != "Дерево") {
+                alert(`Это ${rightAns}, а не дерево!`)
+            }
+            if (task == 3 && rightAns != "Верблюд") {
+                alert(`Это ${rightAns}, а не верблюд!`)
+            }
+            if (task == 4 && rightAns != "Шрек") {
+                alert(`Это ${rightAns}, а не Шрек!`)
+            }
+
+            if (task == 1 && rightAns == "Гвоздь") {
+                d1.hidden = true;
+                d2.hidden = false;
+                task += 1;
+                alert("Теперь это мой гвоздь.")
+            }
+            if (task == 2 && rightAns == "Дерево") {
+                d2.hidden = true;
+                d3.hidden = false;
+                task += 1;
+                alert("Получено достижение: Нарубить дров")
+            }
+            if (task == 3 && rightAns == "Верблюд") {
+                d3.hidden = true;
+                d4.hidden = false;
+                task += 1;
+                alert("*Вася не хочет здесь находиться*")
+            }
+            if (task == 4 && rightAns == "Шрек") {
+                d4.hidden = true;
+                task += 1;
+                alert("Кто посмел прийти на Моё болото?")
+            }
+            if (task > 4) {
+                alert("Ну вот и всё!")
+            }
+
+            rightAns = ""
+
+        }
+
+    </script>
+</body>
+
+</html>
