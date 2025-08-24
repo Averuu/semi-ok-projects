@@ -1,0 +1,35 @@
+body {
+    background-color: rgb(23, 60, 182);
+}
+
+#kra {
+    margin-left: -130px;
+    margin-top: -130px;
+}
+
+#btn {
+    color: #1ed8bf;
+    font: inherit;
+    position: relative;
+    font-size: 30px;
+    border-radius: 25%;
+    border-color: bisque;
+    border-width: 30px;
+}
+
+#kratalk {
+    font-size: 30px;
+    font-family: 'Nanum Gothic Coding', monospace;
+    margin-left: 800px;
+    margin-top: -600px;
+}
+
+#kraton {
+    color: #070aa7;
+    position: relative;
+    font-size: 30px;
+    border-radius: 25%;
+    border-color: rgb(151, 202, 9);
+    border-width: 15px;
+    background-color: rgb(8, 122, 252);
+}

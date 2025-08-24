@@ -1,0 +1,28 @@
+.dog-maraca {
+    width: 120px;
+    height: 120px;
+}
+
+.field {
+    background-color: rgb(14, 175, 14);
+    height: 640px;
+    width: 1300px;
+}
+
+body {
+    background-color: rgb(23, 60, 182);
+}
+
+.light {
+    background-color: rgb(96, 211, 30);
+    height: 128px;
+}
+
+.dark {
+    height: 128px;
+}
+
+#kraken {
+    margin-left: 1200px;
+    margin-top: -800px;
+}
